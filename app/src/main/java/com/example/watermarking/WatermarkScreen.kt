@@ -29,6 +29,9 @@ import androidx.core.content.ContextCompat
 import java.io.OutputStream
 import android.os.Build
 
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
 // ImageSaver class (make sure this is in the same file or imported)
 class ImageSaver(private val context: Context) {
     fun saveImageToGallery(bitmap: Bitmap): String? {
@@ -63,27 +66,6 @@ class ImageSaver(private val context: Context) {
         }
     }
 }
-
-// Watermark generation function
-//fun addTextWatermark(bitmap: Bitmap, text: String): Bitmap {
-//    val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-//    val canvas = Canvas(mutableBitmap)
-//
-//    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-//        color = Color.WHITE
-//        textSize = 40f
-//        alpha = 128
-//    }
-//
-//    val textWidth = paint.measureText(text)
-//    val x = (mutableBitmap.width - textWidth) / 2f
-//    val y = mutableBitmap.height / 2f
-//
-//    canvas.rotate(-45f, mutableBitmap.width / 2f, mutableBitmap.height / 2f)
-//    canvas.drawText(text, x, y, paint)
-//
-//    return mutableBitmap
-//}
 fun addTextWatermark(bitmap: Bitmap, text: String): Bitmap {
     val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
     val canvas = Canvas(mutableBitmap)
@@ -122,15 +104,15 @@ fun addTextWatermark(bitmap: Bitmap, text: String): Bitmap {
     return mutableBitmap
 }
 
+
 // Main Composable function
 @Composable
 fun WatermarkScreen() {
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var watermarkedBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var watermarkedBitmaps by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
     var watermarkText by remember { mutableStateOf("© Deepak Babel") }
     val context = LocalContext.current
 
-    // Use mutableStateOf for ImageSaver to resolve remember issues
     val imageSaver = remember { mutableStateOf(ImageSaver(context)) }
 
     // Permission launcher
@@ -138,74 +120,92 @@ fun WatermarkScreen() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            watermarkedBitmap?.let { bitmap ->
+            watermarkedBitmaps.forEach { bitmap ->
                 imageSaver.value.saveImageToGallery(bitmap)
             }
         } else {
-            Toast.makeText(context, "Storage permission is required to save images", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Storage permission required", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Image picker launcher
+    // Image picker launcher (multiple selection)
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        selectedImageUri = uri
-        uri?.let {
-            val inputStream = context.contentResolver.openInputStream(it)
-            val originalBitmap = BitmapFactory.decodeStream(inputStream)
-            watermarkedBitmap = addTextWatermark(originalBitmap, watermarkText)
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        selectedImageUris = uris
+        watermarkedBitmaps = uris.mapNotNull { uri ->
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream)?.let {
+                    addTextWatermark(it, watermarkText)
+                }
+            }
         }
     }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        TextField(
-            value = watermarkText,
-            onValueChange = { watermarkText = it },
-            label = { Text("Watermark Text") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        item {
+            TextField(
+                value = watermarkText,
+                onValueChange = { watermarkText = it },
+                label = { Text("Watermark Text") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            imagePickerLauncher.launch("image/*")
-        }) {
-            Text("Select Image")
+            Button(onClick = {
+                imagePickerLauncher.launch("image/*")
+            }) {
+                Text("Select Images")  // Changed to plural
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
-        watermarkedBitmap?.let { bitmap ->
+        items(watermarkedBitmaps) { bitmap ->
             Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = "Watermarked Image",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp)
+                    .padding(vertical = 8.dp)
             )
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            Button(onClick = {
-                // For API < 29: Request permission
-                // For API 29+: Directly save without permission
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-                        imageSaver.value.saveImageToGallery(bitmap)
-                    } else {
-                        permissionLauncher.launch(permission)
-                    }
-                } else {
-                    // No permission needed for API 29+
-                    imageSaver.value.saveImageToGallery(bitmap)
+        item {
+            if (watermarkedBitmaps.isNotEmpty()) {
+                Button(
+                    onClick = {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                            val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+                            if (ContextCompat.checkSelfPermission(
+                                    context,
+                                    permission
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                watermarkedBitmaps.forEach { bitmap ->
+                                    imageSaver.value.saveImageToGallery(bitmap)
+                                }
+                            } else {
+                                permissionLauncher.launch(permission)
+                            }
+                        } else {
+                            watermarkedBitmaps.forEach { bitmap ->
+                                imageSaver.value.saveImageToGallery(bitmap)
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    Text("Save All (${watermarkedBitmaps.size}) Images")
                 }
-            }) {
-                Text("Save to Gallery")
             }
         }
     }
