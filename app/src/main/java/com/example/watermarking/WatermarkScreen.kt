@@ -66,13 +66,13 @@ class ImageSaver(private val context: Context) {
         }
     }
 }
-fun addTextWatermark(bitmap: Bitmap, text: String): Bitmap {
+fun addTextWatermark(bitmap: Bitmap, text: String, textSize: Float = 40f): Bitmap {
     val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
     val canvas = Canvas(mutableBitmap)
 
     val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 40f
+        this.textSize = textSize
         alpha = 128
         textAlign = Paint.Align.RIGHT  // Align text to the right
     }
@@ -111,6 +111,7 @@ fun WatermarkScreen() {
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var watermarkedBitmaps by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
     var watermarkText by remember { mutableStateOf("© Deepak Babel") }
+    var watermarkTextSize by remember { mutableStateOf(40f) }
     val context = LocalContext.current
 
     // Add this new state variable for camera URI
@@ -138,7 +139,7 @@ fun WatermarkScreen() {
         watermarkedBitmaps = uris.mapNotNull { uri ->
             context.contentResolver.openInputStream(uri)?.use { stream ->
                 BitmapFactory.decodeStream(stream)?.let {
-                    addTextWatermark(it, watermarkText)
+                    addTextWatermark(it, watermarkText, watermarkTextSize)
                 }
             }
         }
@@ -151,7 +152,7 @@ fun WatermarkScreen() {
             cameraImageUri?.let { uri ->
                 context.contentResolver.openInputStream(uri)?.use { stream ->
                     BitmapFactory.decodeStream(stream)?.let { bitmap ->
-                        val watermarkedBitmap = addTextWatermark(bitmap, watermarkText)
+                        val watermarkedBitmap = addTextWatermark(bitmap, watermarkText, watermarkTextSize)
                         // Add to the displayed images
                         watermarkedBitmaps = watermarkedBitmaps + watermarkedBitmap
                         // Save the watermarked version back to the URI
@@ -190,6 +191,20 @@ fun WatermarkScreen() {
                 label = { Text("Watermark Text") },
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            // Add text size slider
+            Text(
+                "Watermark Size: ${watermarkTextSize.toInt()}px",
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            androidx.compose.material3.Slider(
+                value = watermarkTextSize,
+                onValueChange = { watermarkTextSize = it },
+                valueRange = 20f..100f,
+                modifier = Modifier.fillMaxWidth()
+            )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
