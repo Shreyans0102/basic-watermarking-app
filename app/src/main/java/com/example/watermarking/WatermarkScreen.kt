@@ -32,6 +32,21 @@ import android.os.Build
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
+// Add this class at the top level of your file
+import android.content.Intent
+
+// Custom camera contract that skips the confirmation screen
+class TakePictureNoConfirmation : ActivityResultContracts.TakePicture() {
+    override fun createIntent(context: Context, input: Uri): Intent {
+        return super.createIntent(context, input).apply {
+            // This flag tells the camera to return immediately after capturing
+            putExtra("android.intent.extra.QUICK_CAPTURE", true)
+            // Some device manufacturers use different flags
+            putExtra("quickCapture", true)
+        }
+    }
+}
+
 // ImageSaver class (make sure this is in the same file or imported)
 class ImageSaver(private val context: Context) {
     fun saveImageToGallery(bitmap: Bitmap): String? {
@@ -146,7 +161,7 @@ fun WatermarkScreen() {
     }
     // New camera launcher
     val takePhotoLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture()
+        TakePictureNoConfirmation()
     ) { success ->
         if (success) {
             cameraImageUri?.let { uri ->
@@ -154,7 +169,7 @@ fun WatermarkScreen() {
                     BitmapFactory.decodeStream(stream)?.let { bitmap ->
                         val watermarkedBitmap = addTextWatermark(bitmap, watermarkText, watermarkTextSize)
                         // Add to the displayed images
-                        watermarkedBitmaps = watermarkedBitmaps + watermarkedBitmap
+//                        watermarkedBitmaps = watermarkedBitmaps + watermarkedBitmap
                         // Save the watermarked version back to the URI
                         context.contentResolver.openOutputStream(uri)?.use { outStream ->
                             watermarkedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outStream)
