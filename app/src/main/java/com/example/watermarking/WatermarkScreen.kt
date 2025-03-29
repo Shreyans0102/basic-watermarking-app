@@ -113,6 +113,8 @@ fun WatermarkScreen() {
     var watermarkText by remember { mutableStateOf("© Deepak Babel") }
     val context = LocalContext.current
 
+    // Add this new state variable for camera URI
+    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
     val imageSaver = remember { mutableStateOf(ImageSaver(context)) }
 
     // Permission launcher
@@ -141,6 +143,40 @@ fun WatermarkScreen() {
             }
         }
     }
+    // New camera launcher
+    val takePhotoLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            cameraImageUri?.let { uri ->
+                context.contentResolver.openInputStream(uri)?.use { stream ->
+                    BitmapFactory.decodeStream(stream)?.let { bitmap ->
+                        val watermarkedBitmap = addTextWatermark(bitmap, watermarkText)
+                        // Add to the displayed images
+                        watermarkedBitmaps = watermarkedBitmaps + watermarkedBitmap
+                        // Save the watermarked version back to the URI
+                        context.contentResolver.openOutputStream(uri)?.use { outStream ->
+                            watermarkedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outStream)
+                        }
+                        Toast.makeText(context, "Photo captured and watermarked", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    // Helper function to create image URI
+    fun createImageUri(): Uri? {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "Watermarked_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/WatermarkApp")
+        }
+        return context.contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -164,7 +200,23 @@ fun WatermarkScreen() {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            // New camera button
+            Button(
+                onClick = {
+                    cameraImageUri = createImageUri()
+                    cameraImageUri?.let { uri ->
+                        takePhotoLauncher.launch(uri)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Take Photo with Watermark")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
         }
+
 
         items(watermarkedBitmaps) { bitmap ->
             Image(
