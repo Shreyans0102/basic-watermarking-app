@@ -32,6 +32,21 @@ import android.os.Build
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
+// Add this class at the top level of your file
+import android.content.Intent
+
+// Custom camera contract that skips the confirmation screen
+class TakePictureNoConfirmation : ActivityResultContracts.TakePicture() {
+    override fun createIntent(context: Context, input: Uri): Intent {
+        return super.createIntent(context, input).apply {
+            // This flag tells the camera to return immediately after capturing
+            putExtra("android.intent.extra.QUICK_CAPTURE", true)
+            // Some device manufacturers use different flags
+            putExtra("quickCapture", true)
+        }
+    }
+}
+
 // ImageSaver class (make sure this is in the same file or imported)
 class ImageSaver(private val context: Context) {
     fun saveImageToGallery(bitmap: Bitmap): String? {
@@ -66,13 +81,13 @@ class ImageSaver(private val context: Context) {
         }
     }
 }
-fun addTextWatermark(bitmap: Bitmap, text: String): Bitmap {
+fun addTextWatermark(bitmap: Bitmap, text: String, textSize: Float = 40f): Bitmap {
     val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
     val canvas = Canvas(mutableBitmap)
 
     val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 40f
+        this.textSize = textSize
         alpha = 128
         textAlign = Paint.Align.RIGHT  // Align text to the right
     }
@@ -110,9 +125,12 @@ fun addTextWatermark(bitmap: Bitmap, text: String): Bitmap {
 fun WatermarkScreen() {
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var watermarkedBitmaps by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
-    var watermarkText by remember { mutableStateOf("© Deepak Babel") }
+    var watermarkText by remember { mutableStateOf("Deepak Babel") }
+    var watermarkTextSize by remember { mutableStateOf(100f) }
     val context = LocalContext.current
 
+    // Add this new state variable for camera URI
+    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
     val imageSaver = remember { mutableStateOf(ImageSaver(context)) }
 
     // Permission launcher
@@ -136,10 +154,44 @@ fun WatermarkScreen() {
         watermarkedBitmaps = uris.mapNotNull { uri ->
             context.contentResolver.openInputStream(uri)?.use { stream ->
                 BitmapFactory.decodeStream(stream)?.let {
-                    addTextWatermark(it, watermarkText)
+                    addTextWatermark(it, watermarkText, watermarkTextSize)
                 }
             }
         }
+    }
+    // New camera launcher
+    val takePhotoLauncher = rememberLauncherForActivityResult(
+        TakePictureNoConfirmation()
+    ) { success ->
+        if (success) {
+            cameraImageUri?.let { uri ->
+                context.contentResolver.openInputStream(uri)?.use { stream ->
+                    BitmapFactory.decodeStream(stream)?.let { bitmap ->
+                        val watermarkedBitmap = addTextWatermark(bitmap, watermarkText, watermarkTextSize)
+                        // Add to the displayed images
+//                        watermarkedBitmaps = watermarkedBitmaps + watermarkedBitmap
+                        // Save the watermarked version back to the URI
+                        context.contentResolver.openOutputStream(uri)?.use { outStream ->
+                            watermarkedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outStream)
+                        }
+                        Toast.makeText(context, "Photo captured and watermarked", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    // Helper function to create image URI
+    fun createImageUri(): Uri? {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "Watermarked_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/WatermarkApp")
+        }
+        return context.contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        )
     }
 
     LazyColumn(
@@ -154,6 +206,20 @@ fun WatermarkScreen() {
                 label = { Text("Watermark Text") },
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            // Add text size slider
+            Text(
+                "Watermark Size: ${watermarkTextSize.toInt()}px",
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            androidx.compose.material3.Slider(
+                value = watermarkTextSize,
+                onValueChange = { watermarkTextSize = it },
+                valueRange = 20f..100f,
+                modifier = Modifier.fillMaxWidth()
+            )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -164,7 +230,23 @@ fun WatermarkScreen() {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            // New camera button
+            Button(
+                onClick = {
+                    cameraImageUri = createImageUri()
+                    cameraImageUri?.let { uri ->
+                        takePhotoLauncher.launch(uri)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Take Photo with Watermark")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
         }
+
 
         items(watermarkedBitmaps) { bitmap ->
             Image(
