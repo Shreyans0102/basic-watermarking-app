@@ -62,4 +62,13 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.1")
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    
+    // Media3 dependencies
+    implementation("androidx.media3:media3-exoplayer:1.2.0")
+    implementation("androidx.media3:media3-ui:1.2.0")
+    implementation("androidx.media3:media3-common:1.2.0")
+    
+    // For video processing and transformation
+    implementation("androidx.media3:media3-transformer:1.2.0")
+    implementation("androidx.media3:media3-effect:1.2.0")       // Add this for effect support
 }
