@@ -7,10 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Paint.Align
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -138,8 +134,6 @@ fun ImageWatermarkTab() {
                             context.contentResolver.openOutputStream(uri)?.use { outStream ->
                                 watermarkedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outStream)
                             }
-                            // Add to display list
-                            watermarkedBitmaps = watermarkedBitmaps + watermarkedBitmap
                             Toast.makeText(context, "Photo captured and watermarked", Toast.LENGTH_SHORT).show()
                         }
                     }
