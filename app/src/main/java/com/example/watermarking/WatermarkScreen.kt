@@ -125,8 +125,8 @@ fun addTextWatermark(bitmap: Bitmap, text: String, textSize: Float = 40f): Bitma
 fun WatermarkScreen() {
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var watermarkedBitmaps by remember { mutableStateOf<List<Bitmap>>(emptyList()) }
-    var watermarkText by remember { mutableStateOf("© Deepak Babel") }
-    var watermarkTextSize by remember { mutableStateOf(40f) }
+    var watermarkText by remember { mutableStateOf("Deepak Babel") }
+    var watermarkTextSize by remember { mutableStateOf(100f) }
     val context = LocalContext.current
 
     // Add this new state variable for camera URI
