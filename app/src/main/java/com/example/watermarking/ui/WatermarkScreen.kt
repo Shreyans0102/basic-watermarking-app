@@ -39,13 +39,14 @@ fun WatermarkScreen() {
             icon = Icons.Default.Image,
             selectedIcon = Icons.Default.Image,
             content = { ImageWatermarkTab() }
-        ),
-        TabItem(
-            title = "Videos",
-            icon = Icons.Default.Videocam,
-            selectedIcon = Icons.Default.Videocam,
-            content = { VideoWatermarkTab() }
         )
+        //,
+        //TabItem(
+          //  title = "Videos",
+          //  icon = Icons.Default.Videocam,
+          //  selectedIcon = Icons.Default.Videocam,
+          //  content = { VideoWatermarkTab() }
+        //)
     )
 
     Scaffold(
