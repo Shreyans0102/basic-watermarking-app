@@ -71,4 +71,10 @@ dependencies {
     // For video processing and transformation
     implementation("androidx.media3:media3-transformer:1.2.0")
     implementation("androidx.media3:media3-effect:1.2.0")       // Add this for effect support
+    
+    // Add missing dependencies
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")  // For viewmodel-compose
+    implementation("androidx.compose.material:material-icons-extended:1.6.1")  // For extended material icons
+    implementation("androidx.compose.material3:material3:1.2.0")  // Ensure latest Material 3
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")  // For coroutines
 }

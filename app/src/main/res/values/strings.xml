@@ -1,3 +1,42 @@
 <resources>
     <string name="app_name">Watermarking</string>
+    <string name="watermark_studio">Watermark Studio</string>
+    
+    <!-- Tab Titles -->
+    <string name="tab_images">Images</string>
+    <string name="tab_videos">Videos</string>
+    
+    <!-- Watermark Controls -->
+    <string name="watermark_settings">Watermark Settings</string>
+    <string name="watermark_text">Watermark Text</string>
+    <string name="text_size">Text Size: %1$d px</string>
+    <string name="opacity">Opacity: %1$d%%</string>
+    <string name="show_advanced_options">Show Advanced Options</string>
+    <string name="hide_advanced_options">Hide Advanced Options</string>
+    
+    <!-- Actions -->
+    <string name="select_images">Select Images</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="select_video">Select Video</string>
+    <string name="record_video">Record Video</string>
+    <string name="save_all">Save All (%1$d)</string>
+    <string name="save_image">Save Image</string>
+    <string name="save_video">Save Watermarked Video</string>
+    
+    <!-- Empty States -->
+    <string name="no_images_title">No Images Yet</string>
+    <string name="no_images_message">Select images from your gallery or take a new photo to add a watermark</string>
+    <string name="no_video_title">No Video Selected</string>
+    <string name="no_video_message">Select a video from your gallery or record a new one to add a watermark</string>
+    
+    <!-- Processing -->
+    <string name="processing_images">Processing images…</string>
+    <string name="processing_video">Processing video…</string>
+    <string name="processing_wait">Please wait. This may take a while depending on video size.</string>
+    <string name="processing_complete">%1$d%% complete</string>
+    
+    <!-- Permissions -->
+    <string name="camera_permission_required">Camera permission is needed to take photos. Please enable it in app settings.</string>
+    <string name="storage_permission_required">Storage permission is needed to save images. Please enable it in app settings.</string>
+    <string name="camera_audio_permissions_required">Camera and audio permissions are required for recording videos. Please enable them in app settings.</string>
 </resources>
