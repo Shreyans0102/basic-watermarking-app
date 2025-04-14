@@ -66,6 +66,7 @@ fun ImageWatermarkTab(viewModel: WatermarkViewModel = viewModel()) {
     var isProcessing by remember { mutableStateOf(false) }
     var showGalleryPermissionDialog by remember { mutableStateOf(false) }
     var showCameraPermissionDialog by remember { mutableStateOf(false) }
+    var showCameraSuccess by remember { mutableStateOf(false) }
     
     fun createImageUri(): Uri? {
         val contentValues = ContentValues().apply {
@@ -101,10 +102,10 @@ fun ImageWatermarkTab(viewModel: WatermarkViewModel = viewModel()) {
                                 watermarkedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, outStream)
                             }
                             
-                            // Add to watermarked images
-                            watermarkedBitmaps = watermarkedBitmaps + watermarkedBitmap
+                            // Instead of adding to watermarkedBitmaps, just show a success message
+                            showCameraSuccess = true
                             
-                            Toast.makeText(context, "Photo captured and watermarked", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Photo captured, watermarked and saved to gallery", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -314,6 +315,58 @@ fun ImageWatermarkTab(viewModel: WatermarkViewModel = viewModel()) {
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+        }
+        
+        // Success message for camera capture
+        item {
+            AnimatedVisibility(
+                visible = showCameraSuccess,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoCamera,
+                            contentDescription = "Success",
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column {
+                            Text(
+                                "Photo captured successfully",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                "Watermarked image saved to gallery",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                }
+                
+                // Auto-dismiss after 3 seconds
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(3000)
+                    showCameraSuccess = false
                 }
             }
         }

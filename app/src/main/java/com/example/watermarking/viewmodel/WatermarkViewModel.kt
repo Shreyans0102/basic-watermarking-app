@@ -33,14 +33,16 @@ data class VideoWatermarkState(
     val successMessage: String? = null
 )
 
+// Settings data class
 data class WatermarkSettings(
-    val text: String = "Watermark Text",
-    val textSize: Float = 50f,
+    val text: String = "Deepak Babel",  // Changed default to "Deepak Babel"
+    val textSize: Float = 100f,         // Changed default to 100f
     val opacity: Float = 0.7f,
     val position: WatermarkPosition = WatermarkPosition.BOTTOM_RIGHT,
     val showAdvancedOptions: Boolean = false
 )
 
+// Watermark position enum
 enum class WatermarkPosition {
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER
 }

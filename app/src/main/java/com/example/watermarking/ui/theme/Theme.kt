@@ -16,16 +16,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Brand colors
-private val PrimaryLight = Color(0xFF3B82F6) // Blue
-private val SecondaryLight = Color(0xFFF59E0B) // Amber
-private val TertiaryLight = Color(0xFF10B981) // Emerald
-private val ErrorLight = Color(0xFFEF4444) // Red
+// Purple theme colors
+private val PrimaryLight = Color(0xFF6200EE) // Purple primary
+private val SecondaryLight = Color(0xFF03DAC6) // Teal secondary
+private val TertiaryLight = Color(0xFFBB86FC) // Light purple tertiary
+private val ErrorLight = Color(0xFFB00020) // Standard Material error
 
-private val PrimaryDark = Color(0xFF60A5FA) // Lighter blue
-private val SecondaryDark = Color(0xFFFBBF24) // Lighter amber
-private val TertiaryDark = Color(0xFF34D399) // Lighter emerald
-private val ErrorDark = Color(0xFFF87171) // Lighter red
+private val PrimaryDark = Color(0xFFBB86FC) // Light purple primary
+private val SecondaryDark = Color(0xFF03DAC6) // Teal secondary
+private val TertiaryDark = Color(0xFF6200EE) // Purple tertiary
+private val ErrorDark = Color(0xFFCF6679) // Standard Material error dark
 
 // Color schemes
 private val DarkColorScheme = darkColorScheme(
@@ -35,9 +35,9 @@ private val DarkColorScheme = darkColorScheme(
     error = ErrorDark,
     background = Color(0xFF121212),
     surface = Color(0xFF1E1E1E),
-    onPrimary = Color.White,
+    onPrimary = Color.Black,
     onSecondary = Color.Black,
-    onTertiary = Color.Black,
+    onTertiary = Color.White,
     onBackground = Color.White,
     onSurface = Color.White
 )

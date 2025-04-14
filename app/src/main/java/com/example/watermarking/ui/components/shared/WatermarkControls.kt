@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -107,7 +106,7 @@ fun WatermarkControls(
                 Slider(
                     value = watermarkTextSize,
                     onValueChange = onWatermarkTextSizeChange,
-                    valueRange = 20f..100f,
+                    valueRange = 20f..200f,  // Increased the range to accommodate 100px default
                     modifier = Modifier.fillMaxWidth(),
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
@@ -133,59 +132,7 @@ fun WatermarkControls(
                 }
             }
             
-            // Advanced options toggle
-            TextButton(
-                onClick = { onShowAdvancedOptionsChange(!showAdvancedOptions) },
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(vertical = 8.dp)
-            ) {
-                Text(if (showAdvancedOptions) "Hide Advanced Options" else "Show Advanced Options")
-                Icon(
-                    imageVector = if (showAdvancedOptions) 
-                        Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (showAdvancedOptions) "Hide" else "Show"
-                )
-            }
-            
-            // Advanced options
-            AnimatedVisibility(visible = showAdvancedOptions) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    
-                    // Opacity control
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Opacity,
-                                contentDescription = "Opacity",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            
-                            Text(
-                                "Opacity: ${(watermarkOpacity * 100).toInt()}%",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            )
-                        }
-                        
-                        Slider(
-                            value = watermarkOpacity,
-                            onValueChange = onWatermarkOpacityChange,
-                            valueRange = 0.1f..1f,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                                activeTrackColor = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    }
-                }
-            }
+            // Removed the advanced options section including opacity controls
         }
     }
 }
